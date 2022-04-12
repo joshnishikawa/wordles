@@ -13,34 +13,41 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons%7CMaterial+Icons+Outlined">
 </head>
 <body>
-  <div class="container-fluid">
+  <div class="container">
 
-    <div class="row justify-content-center m-3">
-      <div id="image" class="bg-white rounded-lg"></div>
+    <div class="row justify-content-center my-3">
+      <div class="col text-center">
+        <div id="image" class="bg-white rounded-lg"></div>
+      </div>
     </div>
 
-    <div class="row mb-3 justify-content-center text-center">
-
-      <div id="answer">
+    <div class="row justify-content-center mb-3">
+      <div id="answer" class="text-center">
         <!-- initial text will be replaced -->
         <h1>Wordle For Spelling</h1>
         <p>You know the word. Do you know how to spell it?</p>
         <div class="text-left">
-          <p><span class="btn btn-warning">Yellow</span> means that the letter is somewhere in the word.<br>
-          <span class="btn btn-success">Green</span> means that the letter is in the correct place in the word.<br>
-          <span class="btn btn-secondary">Gray</span> means the letter is <em>not</em> in the word.</p>
+          <p><span class="btn btn-warning">Yellow</span> = the letter is somewhere in the word.<br>
+          <span class="btn btn-primary">Blue</span> = the letter is in the correct place in the word.<br>
+          <span class="btn btn-secondary">Gray</span> = the letter is <em>not</em> in the word.</p>
         </div>
       </div>
     </div>
 
-    <div class="row justify-content-center">
-      <div id="start" class="align-self-start btn btn-lg btn-primary m-3" style="display:none;">
-        START
+
+    <div class="row mb-3">
+      <div class="col text-center">
+        <button id="start" aria-label="start" class="btn btn-lg btn-success" 
+                                              style="display:none;">
+          START
+        </button>
       </div>
     </div>
 
-    <div class="row mb-3 justify-content-center">
-      <div id="guess"></div>
+    <div class="row mb-3">
+      <div class="col text-center">
+        <div id="guess"></div>
+      </div>
     </div>
 
     <div class="row">
@@ -54,6 +61,23 @@
 
 
 <script>
+const words = ["accordion", "airplane", "backpack", "briefcase", "bulldozer",
+               "calculator", "chocolate", "compass", "dinosaur", "dolphin",
+               "dragonfly", "elephant", "giraffe", "grasshopper", "hamburger",
+               "harmonica", "helicopter", "kangaroo", "microphone", "mosquito",
+               "newspaper", "penguin", "percussion", "raccoon", "refrigerator",
+               "saxophone", "spatula", "strawberry", "telescope", "thermometer",
+               "toothbrush", "trombone", "ukulele", "violin", "wrench"]
+
+const letters = ["q","w","e","r","t","y","u","i","o","p",
+                 "a","s","d","f","g","h","j","k","l",
+                 "z","x","c","v","b","n","m","-","'"]
+
+var word =  words.pop();
+var guess = '';
+var place = 0;
+var correct = true; // just to get things started
+
 FYshuffle = (myArray)=>{
   if (myArray.length == 2){
     if ( Math.round( Math.random() ) ){ // Flip a coin. If heads... 
@@ -89,21 +113,21 @@ backspace = ()=>{
   }
 }
 
-submitAnwer = ()=>{
+submitAnswer = ()=>{
   $("#enter").prop('disabled', true);
   if (guess === word){
     $("#guess").hide();
-    $("#answer").html(`<div class="bg-success text-white text-center display-4 rounded-lg shadow p-3">${guess}</div>`);
-    $("#start").show();
+    $("#answer").html(`<div class="btn btn-primary" style="font-size:5em;">${guess}</div>`);
+    $("#start").show().focus();
   }
 
   var html = `<div>`;
 
   for(let l = 0; l < word.length; l++){
     if(guess[l] === word[l]){
-      html += `<div class="btn btn-lg bg-success text-white" 
+      html += `<div class="btn btn-lg bg-primary text-white" 
                     style="font-size:2em; width:60px;">${guess[l]}</div>`;
-      $(`[data-value=${guess[l]}]`).removeClass('bg-warning text-body').addClass('bg-success text-white');
+      $(`[data-value=${guess[l]}]`).removeClass('bg-warning text-body').addClass('bg-primary text-white');
     }
     else if (word.includes(guess[l])){
       html += `<div class="btn btn-lg bg-warning" 
@@ -125,21 +149,29 @@ submitAnwer = ()=>{
 }
 
 
-const words = ["accordion", "airplane", "backpack", "briefcase", "bulldozer",
-               "calculator", "chocolate", "compass", "dinosaur", "dolphin",
-               "dragonfly", "elephant", "giraffe", "grasshopper", "hamburger",
-               "harmonica", "helicopter", "kangaroo", "microphone", "mosquito",
-               "newspaper", "penguin", "percussion", "raccoon", "refrigerator",
-               "saxophone", "spatula", "strawberry", "telescope", "thermometer",
-               "toothbrush", "trombone", "ukulele", "violin", "wrench"]
+resetAnswer = ()=>{
+  correct = false;
+  place = 0;
+  guess = '';
+  $("#guess").html('').show();
+  $("#answer").html('');
 
-const letters = ["q","w","e","r","t","y","u","i","o","p",
-                 "a","s","d","f","g","h","j","k","l",
-                 "z","x","c","v","b","n","m","-","'"]
 
-var word = '';
-var guess = '';
-var place = 0;
+  word = words.pop();
+  $("#image").html(`<img src="img/${word}.svg" 
+                        class="m-3 p-3 border border-dark bg-white rounded-lg" 
+                        style="height:300px;" alt="${word}">`);
+
+  for (let l = 0; l < word.length; l++){
+    $("#answer").append(`<div id="place${l}" 
+                              class="place btn btn-lg alert-primary" 
+                              style="font-size:2em;width:60px;">_</div>`); 
+  }
+  $("#answer").show();
+
+  $("#start").text('NEXT').hide();
+  $(".letter").removeClass('bg-primary bg-warning bg-secondary text-white');
+}
 
 
 $(function(){
@@ -175,22 +207,7 @@ $(function(){
 
   // set or reset everything
   $("#start").on('click', ()=>{
-    place = 0;
-    guess = '';
-    $("#guess").html('').show();
-    $("#answer").html('');
-
-    word = FYshuffle(words)[0]; // pick a random word from the list
-    $("#image").html(`<img src="img/${word}.svg" class="img-flash" style="height:300px;" alt="${word}">`);
-
-    for (let l = 0; l < word.length; l++){
-      $("#answer").append(`<div id="place${l}" class="place btn btn-lg bg-light" 
-                                                style="font-size:2em;width:60px;">_</div>`); 
-    }
-    $("#answer").show();
-
-    $("#start").text('NEXT').hide();
-    $(".letter").removeClass('bg-success bg-warning bg-secondary text-white');
+    resetAnswer();
   });
 
   // input
@@ -213,8 +230,12 @@ $(function(){
     else if(e.key == 'Backspace'){
       backspace();
     }
-    else if(e.key == 'Enter' && place === word.length){
-      submitAnwer();
+    else if(e.key == 'Enter'){
+      if(correct){
+        resetAnswer();
+      }else if (place === word.length){
+        submitAnswer();
+      }
     }
   });
 });
